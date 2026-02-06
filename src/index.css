@@ -1,0 +1,194 @@
+:root {
+  font-family: "Courier New", Courier, monospace;
+  color: #141414;
+  background-color: #f4f1ea;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top, #f7f2e8, #eee6d7);
+}
+
+#root {
+  width: min(960px, 100%);
+  padding: 24px;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.topbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.score {
+  font-size: 16px;
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 16px;
+}
+
+.lobby {
+  display: flex;
+  justify-content: center;
+}
+
+.board {
+  aspect-ratio: 1 / 1;
+  display: grid;
+  gap: 2px;
+  background: #d8d0c2;
+  padding: 10px;
+  border: 2px solid #b6a88f;
+}
+
+.cell {
+  background: #f7f3ea;
+  border-radius: 2px;
+}
+
+.cell.snake {
+  background: #2a2a2a;
+}
+
+.cell.head {
+  filter: brightness(0.85);
+}
+
+.cell.food {
+  background: #c04b3a;
+}
+
+.cell.dead {
+  opacity: 0.5;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #c8bca7;
+  background: #fdfaf3;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.field input {
+  font-family: inherit;
+  padding: 8px 10px;
+  border: 1px solid #2a2a2a;
+  background: #f7f3ea;
+}
+
+.status {
+  min-height: 24px;
+  font-size: 14px;
+}
+
+.error {
+  color: #9b2c2c;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  padding: 8px 10px;
+  border: 1px solid #2a2a2a;
+  background: #f7f3ea;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #ebe3d2;
+}
+
+.players {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.player {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid #2a2a2a;
+}
+
+.controls {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+}
+
+.controls-row {
+  display: flex;
+  gap: 8px;
+}
+
+.footer {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 720px) {
+  #root {
+    padding: 16px;
+  }
+
+  .stage {
+    grid-template-columns: 1fr;
+  }
+
+  .controls {
+    margin-top: 6px;
+  }
+}

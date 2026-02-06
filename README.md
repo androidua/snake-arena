@@ -2,28 +2,36 @@
 
 Real-time multiplayer Snake for up to 4 players. Host a room, share the code, and compete for food.
 
-## Requirements
-- Node.js 18+
-- npm
+## Prerequisites
+If you do not already have dependencies installed, do this first.
 
-## Setup
+### macOS
+1. Install Node.js (LTS) from https://nodejs.org
+2. Install Git (if not already present):
+   - Open Terminal and run `git --version`
+   - If prompted, install the Xcode Command Line Tools
+
+### Windows
+1. Install Node.js (LTS) from https://nodejs.org (includes npm)
+2. Install Git for Windows from https://git-scm.com/download/win
+
+## Setup (all platforms)
 ```bash
-cd "/Users/dmytrobondarenko/Documents/New project"
+git clone https://github.com/androidua/snake-arena.git
+cd snake-arena
 npm install
 ```
 
 ## Run (local machine)
-Open two terminals.
+Open two terminals in the project folder.
 
 Terminal A (WebSocket server):
 ```bash
-cd "/Users/dmytrobondarenko/Documents/New project"
 npm run server
 ```
 
 Terminal B (Vite dev server):
 ```bash
-cd "/Users/dmytrobondarenko/Documents/New project"
 npm run dev
 ```
 
@@ -35,20 +43,17 @@ http://localhost:5173
 ## Run (LAN multiplayer)
 1. Start the WS server (terminal A):
 ```bash
-cd "/Users/dmytrobondarenko/Documents/New project"
 npm run server
 ```
 
 2. Start Vite and allow LAN access (terminal B):
 ```bash
-cd "/Users/dmytrobondarenko/Documents/New project"
 npm run dev -- --host
 ```
 
-3. Find your LAN IP (macOS):
-```bash
-ipconfig getifaddr en0
-```
+3. Find your LAN IP:
+   - macOS: `ipconfig getifaddr en0`
+   - Windows (PowerShell): `ipconfig | findstr /i "IPv4"`
 
 4. Your friend opens:
 ```
@@ -56,6 +61,10 @@ http://<YOUR_LAN_IP>:5173
 ```
 
 5. Host creates a room code in the UI and shares it. Friends join with that code.
+
+## Troubleshooting
+- If your friend can’t connect, ensure both devices are on the same Wi‑Fi/LAN.
+- Allow access through your firewall for ports `5173` (Vite) and `8080` (WebSocket server).
 
 ## Controls
 - Move: Arrow keys or WASD

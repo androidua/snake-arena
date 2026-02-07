@@ -131,6 +131,10 @@ export function stepGame(state, rng) {
     }
   });
 
+  for (const id of ateFood) {
+    if (!next.get(id).alive) ateFood.delete(id);
+  }
+
   let food = state.food;
   next.forEach((snake, id) => {
     if (!snake.alive) return;

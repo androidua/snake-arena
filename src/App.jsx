@@ -202,6 +202,23 @@ export default function App() {
                 );
               })}
             </div>
+            {hasStats(room) && (
+              <div className="session-stats">
+                <div className="session-label">Session</div>
+                {room.players.map((player) => {
+                  const stat = room.stats?.[player.id];
+                  if (!stat) return null;
+                  return (
+                    <div key={player.id} className="stat-row">
+                      <span className="swatch" style={{ background: player.color }} />
+                      <span>{player.name}</span>
+                      <span>{stat.totalFood} food</span>
+                      <span>{stat.wins}W</span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
             <div className="actions">
               {isHost(room, me.id) && room.status === "lobby" && (
                 <button type="button" onClick={handleStart}>
@@ -253,4 +270,9 @@ function keyOf(cell) {
 
 function isHost(room, id) {
   return room?.hostId === id;
+}
+
+function hasStats(room) {
+  if (!room?.stats) return false;
+  return Object.values(room.stats).some((s) => s.totalFood > 0 || s.wins > 0);
 }

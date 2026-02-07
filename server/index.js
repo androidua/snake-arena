@@ -76,6 +76,7 @@ function handleHost(ws, clientId, name = "Player") {
     game: null,
     interval: null,
     status: "lobby",
+    stats: new Map([[clientId, { totalFood: 0, wins: 0 }]]),
   };
   rooms.set(code, room);
   sendRoomUpdate(room);
@@ -98,6 +99,9 @@ function handleJoin(ws, clientId, code, name = "Player") {
 
   const color = COLORS[room.players.size % COLORS.length];
   room.players.set(clientId, { id: clientId, name: name.slice(0, 16), ws, color });
+  if (!room.stats.has(clientId)) {
+    room.stats.set(clientId, { totalFood: 0, wins: 0 });
+  }
   sendRoomUpdate(room);
 }
 
@@ -124,6 +128,7 @@ function handleDisconnect(clientId) {
   if (!room) return;
 
   room.players.delete(clientId);
+  room.stats.delete(clientId);
 
   if (room.players.size === 0) {
     stopGame(room);
@@ -160,6 +165,7 @@ function startGame(room) {
     room.game = stepGame(room.game, Math.random);
     broadcastState(room);
     if (room.game.status !== "running") {
+      accumulateStats(room);
       room.status = room.game.status;
       stopGame(room);
       sendRoomUpdate(room);
@@ -195,6 +201,7 @@ function sendRoomUpdate(room) {
         name: player.name,
         color: player.color,
       })),
+      stats: Object.fromEntries(room.stats),
     },
   };
   broadcast(room, payload);
@@ -226,6 +233,20 @@ function serializeGame(game) {
       body: snake.body,
     })),
   };
+}
+
+function accumulateStats(room) {
+  if (!room.game) return;
+  room.game.snakes.forEach((snake) => {
+    const stat = room.stats.get(snake.id);
+    if (stat) {
+      stat.totalFood += snake.score;
+    }
+  });
+  if (room.game.winnerId) {
+    const winnerStat = room.stats.get(room.game.winnerId);
+    if (winnerStat) winnerStat.wins += 1;
+  }
 }
 
 function findRoomByPlayer(playerId) {

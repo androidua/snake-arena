@@ -8,11 +8,14 @@ export const DIRECTIONS = {
 export const DIRECTION_KEYS = Object.keys(DIRECTIONS);
 
 export function createGameState({ rows, cols, players, rng }) {
+  const midY = Math.floor(rows / 2);
   const spawnPoints = [
     { x: 2, y: 2, dir: DIRECTIONS.RIGHT },
     { x: cols - 3, y: 2, dir: DIRECTIONS.LEFT },
     { x: 2, y: rows - 3, dir: DIRECTIONS.RIGHT },
     { x: cols - 3, y: rows - 3, dir: DIRECTIONS.LEFT },
+    { x: 2, y: midY, dir: DIRECTIONS.RIGHT },
+    { x: cols - 3, y: midY, dir: DIRECTIONS.LEFT },
   ];
 
   const snakes = new Map();

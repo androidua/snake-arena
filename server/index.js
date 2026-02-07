@@ -7,11 +7,11 @@ import {
 
 const PORT = Number(process.env.SNAKE_WS_PORT || 8080);
 const TICK_MS = 120;
-const ROWS = 20;
-const COLS = 20;
-const MAX_PLAYERS = 4;
+const ROWS = 25;
+const COLS = 25;
+const MAX_PLAYERS = 6;
 
-const COLORS = ["#2a2a2a", "#3d5a80", "#8d5a3a", "#5a7d3a"];
+const COLORS = ["#2a2a2a", "#3d5a80", "#8d5a3a", "#5a7d3a", "#6b4c8a", "#c0785a"];
 
 const rooms = new Map();
 let nextClientId = 1;

@@ -1,6 +1,6 @@
 # Snake Arena (Multiplayer)
 
-Real-time multiplayer Snake for up to 4 players. Host a room, share the code, and compete for food.
+Real-time multiplayer Snake for up to 6 players. Host a room, share the code, and compete for food.
 
 ## Prerequisites
 If you do not already have dependencies installed, do this first.

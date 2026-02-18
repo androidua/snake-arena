@@ -162,6 +162,29 @@ button:hover {
   border: 1px solid #2a2a2a;
 }
 
+.session-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 8px;
+  border-top: 1px solid #c8bca7;
+}
+
+.session-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #888;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+}
+
 .controls {
   display: grid;
   gap: 6px;

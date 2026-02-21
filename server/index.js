@@ -1,9 +1,15 @@
 import { WebSocketServer } from "ws";
+import { createServer } from "http";
+import { existsSync, readFileSync } from "fs";
+import { join, extname, dirname } from "path";
+import { fileURLToPath } from "url";
 import {
   createGameState,
   setSnakeDirection,
   stepGame,
 } from "./engine.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const PORT = Number(process.env.SNAKE_WS_PORT || 8080);
 const TICK_MS = 120;
@@ -13,10 +19,73 @@ const MAX_PLAYERS = 6;
 
 const COLORS = ["#2a2a2a", "#3d5a80", "#8d5a3a", "#5a7d3a", "#6b4c8a", "#c0785a"];
 
+// ---------------------------------------------------------------------------
+// Static file server (production / Cloudflare mode)
+// Built frontend lives in dist/ after `npm run build`.
+// In dev mode dist/ won't exist — Vite serves the frontend on port 5173 instead.
+// ---------------------------------------------------------------------------
+const DIST = join(__dirname, "../dist");
+const HAS_DIST = existsSync(DIST);
+
+const MIME = {
+  ".html":  "text/html; charset=utf-8",
+  ".js":    "application/javascript",
+  ".mjs":   "application/javascript",
+  ".css":   "text/css",
+  ".ico":   "image/x-icon",
+  ".png":   "image/png",
+  ".svg":   "image/svg+xml",
+  ".json":  "application/json",
+  ".woff":  "font/woff",
+  ".woff2": "font/woff2",
+};
+
+function handleHttpRequest(req, res) {
+  if (!HAS_DIST) {
+    res.writeHead(200, { "Content-Type": "text/plain" });
+    res.end("Snake WS server is running. Run 'npm run build' and restart for production mode.");
+    return;
+  }
+
+  const urlPath = req.url.split("?")[0];
+  const filePath = join(DIST, urlPath === "/" ? "index.html" : urlPath);
+
+  // Guard against path traversal (e.g. /../etc/passwd)
+  if (!filePath.startsWith(DIST)) {
+    res.writeHead(403);
+    res.end("Forbidden");
+    return;
+  }
+
+  try {
+    const data = readFileSync(filePath);
+    res.writeHead(200, { "Content-Type": MIME[extname(filePath)] || "application/octet-stream" });
+    res.end(data);
+  } catch {
+    // Unknown path — serve index.html so React Router (or a future one) can handle it
+    try {
+      const html = readFileSync(join(DIST, "index.html"));
+      res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+      res.end(html);
+    } catch {
+      res.writeHead(500);
+      res.end("Server error");
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Game state
+// ---------------------------------------------------------------------------
 const rooms = new Map();
 let nextClientId = 1;
 
-const wss = new WebSocketServer({ port: PORT });
+// ---------------------------------------------------------------------------
+// HTTP + WebSocket server — both bound to the same port so a single
+// Cloudflare Tunnel URL covers the frontend and the WebSocket.
+// ---------------------------------------------------------------------------
+const httpServer = createServer(handleHttpRequest);
+const wss = new WebSocketServer({ server: httpServer });
 
 wss.on("connection", (ws) => {
   const clientId = `p${nextClientId++}`;
@@ -267,4 +336,15 @@ function generateRoomCode() {
   return code;
 }
 
-console.log(`Snake WS server running on ws://localhost:${PORT}`);
+// ---------------------------------------------------------------------------
+// Start
+// ---------------------------------------------------------------------------
+httpServer.listen(PORT, () => {
+  console.log(`Snake server → http://localhost:${PORT}`);
+  if (HAS_DIST) {
+    console.log("Mode: production (serving frontend from dist/)");
+    console.log("To expose over the internet: cloudflared tunnel --url http://localhost:" + PORT);
+  } else {
+    console.log("Mode: dev (no dist/ found — run 'npm run dev' for the frontend)");
+  }
+});

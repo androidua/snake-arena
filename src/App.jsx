@@ -11,7 +11,18 @@ const KEY_TO_DIR = {
   d: "RIGHT",
 };
 
-const WS_PORT = 8080;
+// Auto-detect WebSocket URL so the same build works in all environments:
+//   - Vite dev server (port 5173): WS server is separate on port 8080
+//   - Unified production server or Cloudflare Tunnel: same host as the page,
+//     switching ws → wss automatically when the page is served over HTTPS
+function getWsUrl() {
+  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+  const host =
+    window.location.port === "5173"
+      ? `${window.location.hostname}:8080` // dev: separate WS server
+      : window.location.host;              // production / tunnel: same host
+  return `${proto}//${host}`;
+}
 
 export default function App() {
   const wsRef = useRef(null);
@@ -27,7 +38,7 @@ export default function App() {
   const [showSwipeHint, setShowSwipeHint] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${window.location.hostname}:${WS_PORT}`);
+    const ws = new WebSocket(getWsUrl());
     wsRef.current = ws;
 
     ws.addEventListener("open", () => setConnection("open"));

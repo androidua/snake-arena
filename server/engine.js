@@ -48,6 +48,7 @@ export function createGameState({ rows, cols, players, rng }) {
     food,
     status: "running",
     winnerId: null,
+    playerCount: players.length,
   };
 }
 
@@ -158,7 +159,9 @@ export function stepGame(state, rng) {
   let status = food ? "running" : "win";
   let winnerId = null;
 
-  if (aliveSnakes.length <= 1) {
+  // Solo: end only when the snake actually dies (length === 0)
+  // Multiplayer: end when one or zero snakes remain (last one standing wins)
+  if (aliveSnakes.length === 0 || (state.playerCount > 1 && aliveSnakes.length === 1)) {
     status = "gameover";
     winnerId = aliveSnakes[0]?.id || null;
   }

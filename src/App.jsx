@@ -72,6 +72,9 @@ export default function App() {
   // Keyboard controls (desktop)
   useEffect(() => {
     const handleKey = (event) => {
+      // Don't intercept keys while the user is typing in an input field
+      if (event.target.tagName === "INPUT" || event.target.tagName === "TEXTAREA") return;
+
       const dir = KEY_TO_DIR[event.key];
       if (dir) {
         event.preventDefault();

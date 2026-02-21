@@ -56,6 +56,11 @@ body {
   justify-content: center;
 }
 
+/* Wrapper gives us a positioning context for the swipe hint overlay */
+.board-wrapper {
+  position: relative;
+}
+
 .board {
   aspect-ratio: 1 / 1;
   display: grid;
@@ -63,6 +68,9 @@ body {
   background: #d8d0c2;
   padding: 10px;
   border: 2px solid #b6a88f;
+  /* Tell the browser JS owns all touch events on this element —
+     prevents Android Chrome from intercepting swipes before our handler fires */
+  touch-action: none;
 }
 
 .cell {
@@ -84,6 +92,29 @@ body {
 
 .cell.dead {
   opacity: 0.5;
+}
+
+/* Swipe hint overlay — appears on the board when a touch device starts a game.
+   pointer-events: none ensures the first real swipe is never blocked by it. */
+.swipe-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.45);
+  color: #f7f3ea;
+  font-size: 15px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: swipeHintFade 2.2s forwards;
+}
+
+@keyframes swipeHintFade {
+  0%   { opacity: 1; }
+  55%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 
 .panel {
@@ -185,17 +216,6 @@ button:hover {
   font-size: 12px;
 }
 
-.controls {
-  display: grid;
-  gap: 6px;
-  justify-items: center;
-}
-
-.controls-row {
-  display: flex;
-  gap: 8px;
-}
-
 .footer {
   font-size: 12px;
   text-transform: uppercase;
@@ -211,7 +231,9 @@ button:hover {
     grid-template-columns: 1fr;
   }
 
-  .controls {
-    margin-top: 6px;
+  /* On mobile the panel sits below the board — keep it compact */
+  .panel {
+    gap: 8px;
+    padding: 10px;
   }
 }

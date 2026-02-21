@@ -15,6 +15,8 @@ const WS_PORT = 8080;
 
 export default function App() {
   const wsRef = useRef(null);
+  const boardRef = useRef(null);
+  const touchStartRef = useRef(null);
   const [connection, setConnection] = useState("connecting");
   const [me, setMe] = useState({ id: null, name: "" });
   const [room, setRoom] = useState(null);
@@ -22,6 +24,7 @@ export default function App() {
   const [error, setError] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [codeInput, setCodeInput] = useState("");
+  const [showSwipeHint, setShowSwipeHint] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket(`ws://${window.location.hostname}:${WS_PORT}`);
@@ -55,6 +58,7 @@ export default function App() {
     };
   }, []);
 
+  // Keyboard controls (desktop)
   useEffect(() => {
     const handleKey = (event) => {
       const dir = KEY_TO_DIR[event.key];
@@ -70,6 +74,72 @@ export default function App() {
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [room, me.id]);
+
+  // Touch / swipe controls (mobile) — scoped to the board element only so the
+  // side panel can still be scrolled normally. { passive: false } is required
+  // on all three events so preventDefault() actually works in modern browsers.
+  useEffect(() => {
+    const el = boardRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e) => {
+      if (e.touches.length !== 1) return; // ignore multi-touch / pinch
+      e.preventDefault();
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+    };
+
+    // Must preventDefault here too — otherwise pull-to-refresh and browser
+    // back-swipe gestures can fire mid-swipe on both iOS and Android.
+    const onTouchMove = (e) => {
+      e.preventDefault();
+    };
+
+    const onTouchEnd = (e) => {
+      if (!touchStartRef.current || e.changedTouches.length !== 1) return;
+      const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+      touchStartRef.current = null;
+
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      if (Math.max(absDx, absDy) < 20) return; // too short — ignore tap noise
+
+      // Pick the dominant axis to avoid diagonal ambiguity
+      const dir =
+        absDx > absDy
+          ? dx > 0
+            ? "RIGHT"
+            : "LEFT"
+          : dy > 0
+          ? "DOWN"
+          : "UP";
+
+      send({ type: "input", dir });
+    };
+
+    el.addEventListener("touchstart", onTouchStart, { passive: false });
+    el.addEventListener("touchmove", onTouchMove, { passive: false });
+    el.addEventListener("touchend", onTouchEnd, { passive: false });
+
+    return () => {
+      el.removeEventListener("touchstart", onTouchStart);
+      el.removeEventListener("touchmove", onTouchMove);
+      el.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [room?.code]); // re-attach only when the player joins/leaves a room
+
+  // Show "Swipe to move" hint on the first game start if this is a touch device
+  useEffect(() => {
+    if (
+      room?.status === "running" &&
+      ("ontouchstart" in window || navigator.maxTouchPoints > 0)
+    ) {
+      setShowSwipeHint(true);
+    }
+  }, [room?.status]);
 
   const send = (payload) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
@@ -145,7 +215,7 @@ export default function App() {
       {!room && (
         <main className="lobby">
           <div className="panel">
-            <div className="status">Online multiplayer for up to 4 players.</div>
+            <div className="status">Online multiplayer for up to 6 players.</div>
             <label className="field">
               <span>Name</span>
               <input
@@ -181,12 +251,26 @@ export default function App() {
 
       {room && (
         <main className="stage">
-          <div className="board" style={{ gridTemplateColumns: `repeat(${game?.cols || 20}, 1fr)` }}>
-            {boardCells}
+          <div className="board-wrapper">
+            <div
+              ref={boardRef}
+              className="board"
+              style={{ gridTemplateColumns: `repeat(${game?.cols || 25}, 1fr)` }}
+            >
+              {boardCells}
+            </div>
+            {showSwipeHint && (
+              <div
+                className="swipe-hint"
+                onAnimationEnd={() => setShowSwipeHint(false)}
+              >
+                Swipe to move
+              </div>
+            )}
           </div>
           <div className="panel">
             <div className="status" aria-live="polite">
-              {statusLabel || "Use arrow keys or WASD"}
+              {statusLabel || "Swipe or use WASD / arrows"}
             </div>
             <div className="players">
               {room.players.map((player) => {
@@ -236,29 +320,8 @@ export default function App() {
         </main>
       )}
 
-      {room && (
-        <section className="controls" aria-label="On-screen controls">
-          <div className="controls-row">
-            <button type="button" onClick={() => send({ type: "input", dir: "UP" })}>
-              Up
-            </button>
-          </div>
-          <div className="controls-row">
-            <button type="button" onClick={() => send({ type: "input", dir: "LEFT" })}>
-              Left
-            </button>
-            <button type="button" onClick={() => send({ type: "input", dir: "DOWN" })}>
-              Down
-            </button>
-            <button type="button" onClick={() => send({ type: "input", dir: "RIGHT" })}>
-              Right
-            </button>
-          </div>
-        </section>
-      )}
-
       <footer className="footer">
-        <div>WASD / Arrows to move • Host can restart with R</div>
+        <div>Swipe or use WASD / arrows to move • Host can restart with R</div>
       </footer>
     </div>
   );

@@ -190,7 +190,6 @@ export function setSnakeDirection(state, playerId, dir) {
 export function spawnFood(snakes, rows, cols, rng) {
   const occupied = new Set();
   snakes.forEach((snake) => {
-    if (!snake.alive) return;
     snake.body.forEach((segment) => occupied.add(keyOf(segment)));
   });
 

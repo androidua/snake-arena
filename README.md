@@ -2,15 +2,40 @@
 
 Real-time multiplayer Snake for up to 6 players. Host a room, share the code, and compete for food on a 25×25 board.
 
+## Live Version
+
+The game is publicly hosted at:
+
+```
+https://snake-arena-cigj.onrender.com
+```
+
+Hosted on [Render.com](https://render.com) free tier. No installation needed — open the link and play.
+
+### Cold start
+
+The free tier spins the server down after 15 minutes of inactivity. The first person to open the link after an idle period will see a loading delay of roughly 30–50 seconds while the server wakes up. Once it's running, all subsequent connections and gameplay are instant. If the connection drops mid-session, the client will automatically attempt to reconnect every 3 seconds.
+
+### Deploying updates
+
+The live URL is connected to the `main` branch of this repository via Render's GitHub integration. Every push to `main` triggers an automatic redeploy:
+
+```
+git push origin main  →  Render builds and redeploys (~2 min)
+```
+
+No manual steps are needed after the initial setup.
+
 ## Features
 
 - **Up to 6 players** in a single room on a 25×25 grid
 - **Room codes** — host generates a 4-character code, others join by entering it
 - **Real-time gameplay** via WebSockets, ticking every 120ms
 - **Mobile support** — swipe gestures on iOS and Android, keyboard on desktop
-- **Internet play** — expose over the internet in minutes using Cloudflare Tunnel
+- **Internet play** — hosted publicly on Render, or expose locally via Cloudflare Tunnel
 - **Session statistics** — tracks total food eaten and win count per player across rounds within a session
 - **Automatic host migration** — if the host disconnects, the next player in the room becomes host
+- **Auto-reconnect** — if the WebSocket connection drops, the client automatically reconnects every 3 seconds
 - **Food fairness fix** — if two snakes collide head-on at a food cell, neither gets the point and the food stays in place
 - **Collision detection** — head-on collisions and wall collisions kill snakes; a snake running into another snake's body also dies
 
@@ -139,12 +164,29 @@ to your game directly. The URL works as long as both the server and the tunnel a
 > **Note:** The URL changes every time you restart `cloudflared`. To get a permanent fixed
 > URL, create a free Cloudflare account and set up a named tunnel with your own domain.
 
+## Render.com hosting setup
+
+The live version was deployed to Render.com using the following configuration:
+
+- **Service type:** Web Service
+- **Runtime:** Node
+- **Build command:** `npm install && npm run build`
+- **Start command:** `npm start`
+- **Instance type:** Free
+- **Branch:** `main` (auto-deploy on every push)
+
+The server reads the `PORT` environment variable injected by Render, falling back to
+`SNAKE_WS_PORT` or `8080` for local use. Both the built frontend and the WebSocket are
+served from the same port, so a single Render service covers everything.
+
 ## Controls
 - **Move (desktop):** Arrow keys or WASD
 - **Move (mobile):** Swipe in any direction on the game board
 - **Start / Restart:** Host only (button in the side panel)
 
 ## Troubleshooting
+- **Live URL slow to load:** The free Render tier sleeps after 15 min of inactivity. Wait 30–50 seconds for the cold start, then reload.
+- **Disconnected mid-game:** The client will automatically attempt to reconnect every 3 seconds. If it doesn't recover, reload the page.
 - **LAN:** If a friend can't connect, ensure both devices are on the same Wi‑Fi/LAN and allow ports `5173` and `8080` through your firewall.
 - **Cloudflare:** If the tunnel URL isn't loading, make sure `npm start` is running first before starting `cloudflared`.
 - **Mobile:** If swipe controls aren't responding, try swiping from the center of the game board rather than the edges of the screen.

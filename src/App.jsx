@@ -28,7 +28,9 @@ export default function App() {
   const wsRef = useRef(null);
   const boardRef = useRef(null);
   const touchStartRef = useRef(null);
+  const intentionalCloseRef = useRef(false);
   const [connection, setConnection] = useState("connecting");
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const [me, setMe] = useState({ id: null, name: "" });
   const [room, setRoom] = useState(null);
   const [game, setGame] = useState(null);
@@ -38,11 +40,19 @@ export default function App() {
   const [showSwipeHint, setShowSwipeHint] = useState(false);
 
   useEffect(() => {
+    intentionalCloseRef.current = false;
+    setConnection("connecting");
     const ws = new WebSocket(getWsUrl());
     wsRef.current = ws;
 
     ws.addEventListener("open", () => setConnection("open"));
-    ws.addEventListener("close", () => setConnection("closed"));
+    ws.addEventListener("close", () => {
+      if (intentionalCloseRef.current) return;
+      setConnection("reconnecting");
+      setRoom(null);
+      setGame(null);
+      setTimeout(() => setReconnectAttempt((n) => n + 1), 3000);
+    });
     ws.addEventListener("error", () => setConnection("error"));
 
     ws.addEventListener("message", (event) => {
@@ -65,9 +75,10 @@ export default function App() {
     });
 
     return () => {
+      intentionalCloseRef.current = true;
       ws.close();
     };
-  }, []);
+  }, [reconnectAttempt]);
 
   // Keyboard controls (desktop)
   useEffect(() => {
@@ -256,7 +267,13 @@ export default function App() {
               </button>
             </div>
             <div className="status">
-              {connection === "open" ? "Connected" : `Connection: ${connection}`}
+              {connection === "open"
+                ? "Connected"
+                : connection === "reconnecting"
+                ? "Disconnected — reconnecting…"
+                : connection === "connecting"
+                ? "Connecting…"
+                : `Connection: ${connection}`}
             </div>
             {error && <div className="error">{error}</div>}
           </div>

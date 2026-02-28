@@ -11,7 +11,7 @@ import {
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-const PORT = Number(process.env.SNAKE_WS_PORT || 8080);
+const PORT = Number(process.env.PORT || process.env.SNAKE_WS_PORT || 8080);
 const TICK_MS = 120;
 const ROWS = 25;
 const COLS = 25;

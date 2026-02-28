@@ -356,7 +356,7 @@ export default function App() {
         <div className="credit">
           A personal project by{" "}
           <a href="https://github.com/androidua/snake-arena" target="_blank" rel="noreferrer">
-            Dmytro Bondarenko
+            Dmytro B.
           </a>{" "}
           · built with Claude AI
         </div>

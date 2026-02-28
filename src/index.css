@@ -222,6 +222,20 @@ button:hover {
   letter-spacing: 0.08em;
 }
 
+.credit {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #999;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.credit a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 @media (max-width: 720px) {
   #root {
     padding: 16px;

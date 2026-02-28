@@ -353,6 +353,13 @@ export default function App() {
 
       <footer className="footer">
         <div>Swipe or use WASD / arrows to move • Host can restart with R</div>
+        <div className="credit">
+          A personal project by{" "}
+          <a href="https://github.com/androidua/snake-arena" target="_blank" rel="noreferrer">
+            Dmytro Bondarenko
+          </a>{" "}
+          · built with Claude AI
+        </div>
       </footer>
     </div>
   );
